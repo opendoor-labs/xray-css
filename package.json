@@ -1,0 +1,25 @@
+{
+  "name": "xray-css",
+  "version": "1.0.0",
+  "description": "Unit test your CSS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "unit",
+    "test",
+    "css",
+    "less"
+  ],
+  "author": "Visnu Pitiyanvath <visnup@gmail.com>",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opendoor-labs/xray-css.git"
+  },
+  "bugs": {
+    "url": "https://github.com/opendoor-labs/xray-css/issues"
+  },
+  "homepage": "https://github.com/opendoor-labs/xray-css#readme"
+}
