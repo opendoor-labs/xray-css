@@ -1,7 +1,7 @@
 {
   "name": "xray-css",
   "version": "1.0.0",
-  "description": "Unit test your CSS",
+  "description": "Unit test CSS visually",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

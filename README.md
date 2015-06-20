@@ -1,10 +1,8 @@
 # X-Ray CSS
 
-Unit test CSS visually.
-
 ## Installation
 
-npm install --save-dev xray-css
+`npm install --save-dev xray-css`
 
 ## Purpose
 
