@@ -1,6 +1,6 @@
 {
   "name": "xray-css",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "Unit test CSS visually",
   "main": "index.js",
   "scripts": {
