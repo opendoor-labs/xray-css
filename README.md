@@ -47,12 +47,19 @@ disabled).
 button.html:
 
 ```html
-<link href="button.css" type="text/css" rel="stylesheet"/>
+<link href="button.css" rel="stylesheet"/>
 
-<button>Short</button>
-<button>Some really long text that could happen, you know?</button>
+<describe title="a simple button">
+  <button>Short</button>
+</describe>
 
-<button disabled>Disabled</button>
+<describe title="long text">
+  <button>Some really long text that could happen, you know?</button>
+</describe>
+
+<describe title="disabled">
+  <button disabled>Disabled</button>
+</describe>
 ```
 
 Now, when we run xray for the first time, it'll generate an expected screenshot of **just this unit test**. If you were to run it again, you'd expect the
