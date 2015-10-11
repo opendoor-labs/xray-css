@@ -1,48 +1,101 @@
-var path = require('path');
-var vo = require('vo');
-var _ = require('lodash');
-var Nightmare = require('nightmare');
+"use strict";
 
-var css = path.join(__dirname, 'index.css');
+const fs = require('fs'),
+      path = require('path'),
+      vo = require('vo'),
+      mkdirp = vo(require('mkdirp')),
+      Mocha = require('mocha'),
+      assert = require('assert'),
+      Nightmare = require('nightmare'),
+      BlinkDiff = require('blink-diff');
+
+const debug = require('debug')('xray'),
+      css = path.join(__dirname, 'index.css');
  
 module.exports = function(argv) {
-  "use strict";
-
-  const file = path.join(process.cwd(), argv._[0]),
-        extension = path.extname(file),
-        base = file.replace(extension, '');
-
-  const nightmare = Nightmare();
+  const mocha = new Mocha();
 
   vo(function *() {
-    // load the file
-    yield nightmare
-      .goto(`file://${file}`)
-      .inject('css', css)
-      .exists('body');
-
-    // pull out describe blocks
-    var describes = yield nightmare.evaluate(function() {
-        return Array.prototype.map.call(document.querySelectorAll('describe'), function(element) {
-          return {
-            title: element.title,
-            x: element.offsetLeft,
-            y: element.offsetTop,
-            width: element.offsetWidth,
-            height: element.offsetHeight
-          };
-        });
-      });
-
-    // render each block
-    for (var i = 0; i < describes.length; i++) {
-      let describe = describes[i],
-          title = _.kebabCase(describe.title) || i;
-      yield nightmare.screenshot(`${base}-${title}.png`, describe);
-    }
-
-    yield nightmare.end();
+    for (let i = 0; i < argv._.length; i++)
+      yield addSuite(mocha.suite, argv._[i]);
   })(function(err, result) {
     if (err) throw err;
+
+    mocha.run(function(failures) {
+      process.on('exit', function() {
+        process.exit(failures);
+      });
+    });
   });
 };
+
+function *addSuite(parent, file) {
+  const filepath = path.join(process.cwd(), file),
+        basename = path.basename(file),
+        dirname = path.dirname(filepath);
+
+  const suite = Mocha.Suite.create(parent, basename);
+  const nightmare = Nightmare();
+
+  suite.afterAll(nightmare.end.bind(nightmare));
+
+  // load the file
+  yield nightmare
+    .goto(`file://${filepath}`)
+    .inject('css', css)
+    .exists('body');
+
+  // pull out describe blocks
+  var describes = yield nightmare.evaluate(function() {
+    var map = Array.prototype.map;
+    return map.call(document.querySelectorAll('describe'), function(node) {
+      return {
+        title: node.title,
+        x: node.offsetLeft,
+        y: node.offsetTop,
+        width: node.offsetWidth,
+        height: node.offsetHeight
+      };
+    });
+  });
+
+  if (describes.length === 0)
+    yield nightmare.end();
+
+  // add a test for each describe
+  describes.forEach(function(describe, i) {
+    suite.addTest(new Mocha.Test(describe.title, function(done) {
+      const latestPath = path.join(dirname, 'latest', basename),
+            passingPath = path.join(dirname, 'passing', basename),
+            diffPath = path.join(dirname, 'diff', basename);
+      const title = describe.title || i,
+            latest = path.join(latestPath, title) + '.png',
+            passing = path.join(passingPath, title) + '.png',
+            diff = path.join(diffPath, title) + '.png';
+
+      vo([
+        mkdirp(latestPath),
+        mkdirp(passingPath),
+        mkdirp(diffPath)
+      ],
+      function *() { yield nightmare.screenshot(latest, describe) },
+      function(err, next) {
+        if (err) return next(err);
+        if (fs.existsSync(passing)) {
+          const blink = new BlinkDiff({
+            imageAPath: latest,
+            imageBPath: passing,
+            imageOutputPath: diff
+          });
+          blink.run(function(err, result) {
+            if (err) return next(err);
+            next(blink.hasPassed(result.code) ? null : Error('Output do not match'));
+          });
+        } else {
+          fs.createReadStream(from).pipe(fs.createWriteStream(to))
+            .on('finish', next);
+        }
+      })(done);
+    }));
+  });
+}

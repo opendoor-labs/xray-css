@@ -23,10 +23,12 @@
   },
   "homepage": "https://github.com/opendoor-labs/xray-css#readme",
   "dependencies": {
-    "co": "^4.6.0",
-    "lodash": "^3.10.1",
-    "nightmare": "^2.0.7",
-    "optimist": "^0.6.1",
-    "vo": "^1.0.3"
+    "blink-diff": "1.0.12",
+    "debug": "^2.2.0",
+    "mkdirp": "0.5.1",
+    "mocha": "2.3.3",
+    "nightmare": "2.0.7",
+    "optimist": "0.6.1",
+    "vo": "1.0.3"
   }
 }
