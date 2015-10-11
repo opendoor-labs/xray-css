@@ -24,6 +24,7 @@
   "homepage": "https://github.com/opendoor-labs/xray-css#readme",
   "dependencies": {
     "co": "^4.6.0",
+    "lodash": "^3.10.1",
     "nightmare": "^2.0.7",
     "optimist": "^0.6.1",
     "vo": "^1.0.3"
