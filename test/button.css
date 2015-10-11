@@ -1,0 +1,10 @@
+button {
+  font: 16px sans-serif;
+  border: solid 1px hsla(0, 0%, 0%, .2);
+  border-radius: 2px;
+  background-color: transparent;
+  max-width: 10em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
