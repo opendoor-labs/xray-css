@@ -4,9 +4,8 @@ const fs = require('fs'),
       path = require('path'),
       vo = require('vo'),
       mkdirp = vo(require('mkdirp')),
-      cp = require('cp'),
+      cp = vo(require('cp')),
       Mocha = require('mocha'),
-      assert = require('assert'),
       Nightmare = require('nightmare'),
       BlinkDiff = require('blink-diff');
 
@@ -33,7 +32,10 @@ module.exports = function(argv) {
 function *addSuite(parent, file) {
   const filepath = path.join(process.cwd(), file),
         basename = path.basename(file),
-        dirname = path.dirname(filepath);
+        dirname = path.dirname(filepath),
+        currentPath = path.join(dirname, 'current', basename),
+        passingPath = path.join(dirname, 'passing', basename),
+        diffPath = path.join(dirname, 'diff', basename);
 
   const suite = Mocha.Suite.create(parent, basename);
   const nightmare = Nightmare();
@@ -47,51 +49,55 @@ function *addSuite(parent, file) {
   // pull out describe blocks
   var describes = yield nightmare.evaluate(getDescribes);
 
-  if (describes.length)
-    suite.afterAll(nightmare.end.bind(nightmare));
-  else
-    yield nightmare.end();
-
-  const latestPath = path.join(dirname, 'latest', basename),
-        passingPath = path.join(dirname, 'passing', basename),
-        diffPath = path.join(dirname, 'diff', basename);
   // add a test for each describe
   describes.forEach(function(describe, i) {
     suite.addTest(new Mocha.Test(describe.title, function(done) {
       const title = describe.title || i,
-            latest = path.join(latestPath, title) + '.png',
-            passing = path.join(passingPath, title) + '.png',
-            diff = path.join(diffPath, title) + '.png';
+            diff = {
+              imageAPath: path.join(currentPath, title) + '.png',
+              imageBPath: path.join(passingPath, title) + '.png',
+              imageOutputPath: path.join(diffPath, title) + '.png',
+              threshold: 20
+            };
 
       vo(
-        [ mkdirp(latestPath), mkdirp(passingPath), mkdirp(diffPath) ],
 
-        function *() { yield nightmare.screenshot(latest, describe.clip) },
+        // create directories
+        [ mkdirp(currentPath), mkdirp(passingPath), mkdirp(diffPath) ],
 
-        function(err, next) {
-          if (err) return next(err);
-          if (fs.existsSync(passing)) {
-            const blink = new BlinkDiff({
-              imageAPath: latest,
-              imageBPath: passing,
-              imageOutputPath: diff,
-              threshold: 20,
-            });
-            blink.run(function(err, result) {
-              if (err) return next(err);
+        // take screenshot
+        function *() {
+          yield nightmare.screenshot(diff.imageAPath, describe.clip)
+        },
 
-              if (blink.hasPassed(result.code))
-                cp(latest, passing, next);
-              else
-                next(Error(`Difference (${result.differences}px): ${diff}`));
-            });
-          } else {
-            cp(latest, passing, next);
-          }
-        }
+        // compare to last screenshot
+        function(_, next) {
+          if (!fs.existsSync(diff.imageBPath))
+            return next();
+
+          new BlinkDiff(diff).run(function(err, result) {
+            if (err)
+              return next(err);
+
+            if (!BlinkDiff.prototype.hasPassed(result.code))
+              return next(Error(`(${result.differences}px): ${diff.imageOutputPath}`));
+
+            next();
+          });
+        },
+
+        // copy A to B
+        cp(diff.imageAPath, diff.imageBPath)
+
       )(done);
     }));
   });
+
+  // clean up nightmare
+  if (describes.length)
+    suite.afterAll(nightmare.end.bind(nightmare));
+  else
+    yield nightmare.end();
 }
 
 function getDescribes() {
