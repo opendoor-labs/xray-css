@@ -4,6 +4,7 @@ const fs = require('fs'),
       path = require('path'),
       vo = require('vo'),
       mkdirp = vo(require('mkdirp')),
+      cp = require('cp'),
       Mocha = require('mocha'),
       assert = require('assert'),
       Nightmare = require('nightmare'),
@@ -91,10 +92,6 @@ function *addSuite(parent, file) {
       )(done);
     }));
   });
-}
-
-function cp(from, to, cb) {
-  fs.createReadStream(from).pipe(fs.createWriteStream(to)).on('finish', cb);
 }
 
 function getDescribes() {
