@@ -62,32 +62,39 @@ function *addSuite(parent, file) {
             passing = path.join(passingPath, title) + '.png',
             diff = path.join(diffPath, title) + '.png';
 
-      vo([
-        mkdirp(latestPath),
-        mkdirp(passingPath),
-        mkdirp(diffPath)
-      ],
-      function *() { yield nightmare.screenshot(latest, describe.clip) },
-      function(err, next) {
-        if (err) return next(err);
-        if (fs.existsSync(passing)) {
-          const blink = new BlinkDiff({
-            imageAPath: latest,
-            imageBPath: passing,
-            imageOutputPath: diff,
-            threshold: 20,
-          });
-          blink.run(function(err, result) {
-            if (err) return next(err);
-            next(blink.hasPassed(result.code) ? null : Error('Output does not match'));
-          });
-        } else {
-          fs.createReadStream(from).pipe(fs.createWriteStream(to))
-            .on('finish', next);
+      vo(
+        [ mkdirp(latestPath), mkdirp(passingPath), mkdirp(diffPath) ],
+
+        function *() { yield nightmare.screenshot(latest, describe.clip) },
+
+        function(err, next) {
+          if (err) return next(err);
+          if (fs.existsSync(passing)) {
+            const blink = new BlinkDiff({
+              imageAPath: latest,
+              imageBPath: passing,
+              imageOutputPath: diff,
+              threshold: 20,
+            });
+            blink.run(function(err, result) {
+              if (err) return next(err);
+
+              if (blink.hasPassed(result.code))
+                cp(latest, passing, next);
+              else
+                next(Error(`Difference (${result.differences}px): ${diff}`));
+            });
+          } else {
+            cp(latest, passing, next);
+          }
         }
-      })(done);
+      )(done);
     }));
   });
+}
+
+function cp(from, to, cb) {
+  fs.createReadStream(from).pipe(fs.createWriteStream(to)).on('finish', cb);
 }
 
 function getDescribes() {
