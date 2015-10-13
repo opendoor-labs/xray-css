@@ -11,7 +11,7 @@ const fs = require('fs'),
 
 const debug = require('debug')('xray'),
       css = path.join(__dirname, 'index.css');
- 
+
 module.exports = function(argv) {
   const mocha = new Mocha();
 
@@ -46,13 +46,13 @@ function *addSuite(parent, file) {
     .inject('css', css)
     .exists('body');
 
-  // pull out describe blocks
-  var describes = yield nightmare.evaluate(getDescribes);
+  // pull out example blocks
+  var examples = yield nightmare.evaluate(getExamples);
 
-  // add a test for each describe
-  describes.forEach(function(describe, i) {
-    suite.addTest(new Mocha.Test(describe.title, function(done) {
-      const title = describe.title || i,
+  // add a test for each example
+  examples.forEach(function(example, i) {
+    suite.addTest(new Mocha.Test(example.title, function(done) {
+      const title = example.title || i,
             diff = {
               imageAPath: path.join(currentPath, title) + '.png',
               imageBPath: path.join(passingPath, title) + '.png',
@@ -67,7 +67,7 @@ function *addSuite(parent, file) {
 
         // take screenshot
         function *() {
-          yield nightmare.screenshot(diff.imageAPath, describe.clip)
+          yield nightmare.screenshot(diff.imageAPath, example.clip)
         },
 
         // compare to last screenshot
@@ -94,15 +94,15 @@ function *addSuite(parent, file) {
   });
 
   // clean up nightmare
-  if (describes.length)
+  if (examples.length)
     suite.afterAll(nightmare.end.bind(nightmare));
   else
     yield nightmare.end();
 }
 
-function getDescribes() {
+function getExamples() {
   var map = Array.prototype.map;
-  return map.call(document.querySelectorAll('describe'), function(node) {
+  return map.call(document.querySelectorAll('example'), function(node) {
     return {
       title: node.title,
       clip: {
