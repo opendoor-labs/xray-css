@@ -1,6 +1,6 @@
 {
   "name": "xray-css",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Unit test CSS visually",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://github.com/opendoor-labs/xray-css/issues"
   },
   "homepage": "https://github.com/opendoor-labs/xray-css#readme",
-  "bin": "./cli.js",
+  "bin": "bin/cli.js",
   "dependencies": {
     "blink-diff": "1.0.12",
     "cp": "0.2.0",
