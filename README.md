@@ -62,11 +62,13 @@ button.html:
 </example>
 ```
 
-Now, when we run xray for the first time, it'll generate an expected screenshot of **just this unit test**. If you were to run it again, you'd expect the
-screenshot to stay the same. Now if someone were to come along and change the
-`min-width` of a button, xray would fail to compare correctly against the last
-screenshot. If someone were to change a button on your home page though, this
-unit test would not be affected: your buttons are likely still all-ok CSS-wise.
+Now, when we run xray-css for the first time, it'll generate an expected
+screenshot of **just this unit test**. If you were to run it again, you'd
+expect the screenshot to stay the same. Now if someone were to come along and
+change the `min-width` of a button, xray-css would fail to compare correctly
+against the last screenshot. If someone were to change a button on your home
+page though, this unit test would not be affected: your buttons are likely
+still all-ok CSS-wise.
 
 In this way of **unit testing** CSS, we can avoid false positives in unreleated
 changes in how our CSS is used.
