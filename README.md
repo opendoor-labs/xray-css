@@ -7,7 +7,7 @@
 ## Purpose
 
 CSS code, like JavaScript code, changes all the time. Many attempts at
-verifying changes don't cause unwanted effects are brittle. We can unit test
+verifying that changes don't cause unwanted effects are brittle. We can unit test
 CSS visually at a component level though to great effect.
 
 ## How
